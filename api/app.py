@@ -1,3 +1,25 @@
+# Endpoint para descargar un solo JSON con todas las hojas (para IA)
+@app.route('/descargar-todo-json', methods=['GET'])
+def descargar_todo_json():
+    hojas = cargar_todos_los_json()
+    return send_file(
+        io.BytesIO(json.dumps(hojas, ensure_ascii=False, indent=2).encode('utf-8')),
+        mimetype='application/json',
+        as_attachment=True,
+        download_name='smartsheet_todo.json')
+import zipfile
+import io
+# Endpoint para descargar todos los archivos de Smartsheet en un ZIP
+@app.route('/descargar-todo', methods=['GET'])
+def descargar_todo():
+    data_dir = Path(__file__).parent / 'data'
+    mem_zip = io.BytesIO()
+    with zipfile.ZipFile(mem_zip, mode='w', compression=zipfile.ZIP_DEFLATED) as zf:
+        for archivo in data_dir.glob('sheet_*.*'):
+            # El nombre en el ZIP será igual al nombre del archivo local
+            zf.write(archivo, arcname=archivo.name)
+    mem_zip.seek(0)
+    return send_file(mem_zip, mimetype='application/zip', as_attachment=True, download_name='smartsheet_todo.zip')
 
 from flask import Flask, request, render_template_string, send_file, jsonify, Response
 import os
@@ -127,15 +149,22 @@ def get_last_run():
 @app.route('/', methods=['GET', 'POST'])
 def index():
     token_path = Path(__file__).parent / '.smartsheet_token'
+    menu_descargas = '''
+    <div style="margin:1em 0;">
+        <a class="btn" href="/descargar-todo" target="_blank">Descargar TODO (ZIP)</a>
+        <a class="btn" href="/descargar-todo-json" target="_blank">Descargar TODO (JSON global)</a>
+        <a class="btn" href="/api/hojas_json" target="_blank">Ver JSON para IA</a>
+    </div>
+    '''
     if request.method == 'POST' and 'token' in request.form:
         token = request.form['token']
         with open(token_path, 'w') as f:
             f.write(token)
         os.environ['SMARTSHEET_API_TOKEN'] = token
         subprocess.Popen(['python3', str(Path(__file__).parent / 'descarga_periodica.py')])
-        return render_template_string(TEMPLATE_OK.replace('{last_run}', get_last_run()).replace('{archivos}', render_archivos()))
+        return render_template_string(menu_descargas + TEMPLATE_OK.replace('{last_run}', get_last_run()).replace('{archivos}', render_archivos()))
     if token_path.exists():
-        return render_template_string(TEMPLATE_OK.replace('{last_run}', get_last_run()).replace('{archivos}', render_archivos()))
+        return render_template_string(menu_descargas + TEMPLATE_OK.replace('{last_run}', get_last_run()).replace('{archivos}', render_archivos()))
     return render_template_string(TEMPLATE_FORM)
 
 # Renderizar tabla de archivos
@@ -248,4 +277,46 @@ def archivo(nombre):
     return 'Archivo no encontrado', 404
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=8080)
+    port = int(os.environ.get("PORT", 8080))
+    app.run(host='0.0.0.0', port=port)
+# Endpoint para Make: descarga archivo, extrae texto y lo devuelve
+import requests
+import tempfile
+import mimetypes
+import pandas as pd
+import PyPDF2
+@app.route('/descargar-y-preparar', methods=['POST'])
+def descargar_y_preparar():
+    data = request.get_json(force=True)
+    url = data.get('archivo_url')
+    tipo = data.get('archivo_tipo')
+    token_seguridad = data.get('token_seguridad')
+    # Validación básica de seguridad
+    if token_seguridad != os.getenv('API_SECRET', '12345'):
+        return jsonify({'error': 'Token de seguridad inválido'}), 403
+    if not url or not tipo:
+        return jsonify({'error': 'Faltan parámetros'}), 400
+    try:
+        # Descargar archivo temporalmente
+        r = requests.get(url)
+        r.raise_for_status()
+        with tempfile.NamedTemporaryFile(delete=False, suffix=mimetypes.guess_extension(tipo) or '') as tmp:
+            tmp.write(r.content)
+            tmp_path = tmp.name
+        texto = ''
+        if 'excel' in tipo or tmp_path.endswith('.xlsx'):
+            df = pd.read_excel(tmp_path)
+            texto = df.to_string(index=False)
+        elif 'csv' in tipo or tmp_path.endswith('.csv'):
+            df = pd.read_csv(tmp_path)
+            texto = df.to_string(index=False)
+        elif 'pdf' in tipo or tmp_path.endswith('.pdf'):
+            with open(tmp_path, 'rb') as f:
+                reader = PyPDF2.PdfReader(f)
+                texto = '\n'.join(page.extract_text() or '' for page in reader.pages)
+        else:
+            texto = r.text
+        os.unlink(tmp_path)
+        return jsonify({'texto': texto[:100000]}), 200
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
