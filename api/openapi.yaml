@@ -1,0 +1,38 @@
+openapi: 3.0.0
+info:
+  title: Smartsheet Downloader API
+  version: 1.0.0
+  description: API para descargar y exponer hojas de Smartsheet en varios formatos.
+servers:
+  - url: http://localhost:8080
+paths:
+  /:
+    get:
+      summary: Página principal y estado
+      responses:
+        '200':
+          description: Página HTML
+  /logs:
+    get:
+      summary: Ver logs de ejecución
+      responses:
+        '200':
+          description: Logs en texto
+  /archivos:
+    get:
+      summary: Listar archivos descargados
+      responses:
+        '200':
+          description: HTML con links a archivos
+  /archivo/{nombre}:
+    get:
+      summary: Descargar o visualizar archivo específico (JSON, XLSX, CSV, PDF)
+      parameters:
+        - in: path
+          name: nombre
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Archivo descargado o visualizado

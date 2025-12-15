@@ -1,15 +1,16 @@
 
+
 # apisby
 
-API clonable para descargar y comparar datos de Smartsheet periódicamente, con interfaz web para configuración y funcionamiento automático en Linux.
+API clonable para descargar y comparar datos de Smartsheet periódicamente, con interfaz web para configuración, endpoints para IA y funcionamiento automático en Linux o Render.
 
 ## ¿Qué hace este proyecto?
 
-- Descarga automáticamente todas las hojas de tu cuenta Smartsheet cada 3 minutos y las guarda localmente en formato JSON.
+- Descarga automáticamente todas las hojas de tu cuenta Smartsheet cada 3 minutos y las guarda localmente en formato JSON y Excel (XLSX).
 - Compara los datos descargados para detectar cambios.
-- Incluye una pequeña web para ingresar el token y mostrar el estado del servicio.
-- Listo para clonar y usar en cualquier Linux.
-
+- Incluye una web para ingresar el token, ver estado, logs y descargar los archivos en ambos formatos.
+- Expone endpoints para que una IA o sistema externo pueda consumir los datos descargados.
+- Listo para clonar y usar en cualquier Linux o desplegar en Render.com.
 
 ## Instalación rápida
 
@@ -31,6 +32,13 @@ API clonable para descargar y comparar datos de Smartsheet periódicamente, con 
 	# Luego abre http://localhost:8080
 	```
 
+## Endpoints útiles
+
+- `/` : Página principal, estado y configuración.
+- `/logs` : Ver logs de ejecución.
+- `/archivos` : Listado de archivos descargados (JSON y XLSX).
+- `/archivo/<nombre>` : Descarga o visualiza un archivo específico (útil para IA o integraciones).
+
 ## Despliegue en Render.com
 
 1. Crea una cuenta en https://render.com y selecciona "New Web Service".
@@ -45,17 +53,15 @@ API clonable para descargar y comparar datos de Smartsheet periódicamente, con 
 5. Render instalará Flask y todas las dependencias automáticamente.
 6. Accede a la URL pública que Render te proporciona.
 
----
-
 ## Estructura
 
-- `api/descarga_periodica.py`: Script principal de descarga y comparación.
-- `api/app.py`: Web mínima para configuración y estado.
+- `api/descarga_periodica.py`: Script principal de descarga y comparación (genera JSON y XLSX).
+- `api/app.py`: Web para configuración, estado, logs y descarga de archivos.
 - `api/data/`: Carpeta donde se guardan los archivos descargados.
 - `instalar_todo.sh`: Instalador y configurador automático.
 
 ## Requisitos
-- Linux
+- Linux o Render.com
 - Python 3
 - pip
 - whiptail

@@ -1,6 +1,4 @@
 
-import smartsheet
-import schedule
 
 import smartsheet
 import schedule
@@ -58,7 +56,38 @@ def descargar_y_guardar_todo():
                         f.write(chunk)
             except Exception as e:
                 log(f'ERROR al descargar XLSX para hoja {sheet.name}: {e}')
+            # Descargar como CSV
+            try:
+                response_csv = smartsheet_client.Sheets.get_sheet_as_csv(sheet_id)
+                path_csv = DATA_DIR / f'sheet_{sheet_id}.csv'
+                with open(path_csv, 'wb') as f:
+                    for chunk in response_csv:
+                        f.write(chunk)
+            except Exception as e:
+                log(f'ERROR al descargar CSV para hoja {sheet.name}: {e}')
+            # Descargar como PDF
+            try:
+                response_pdf = smartsheet_client.Sheets.get_sheet_as_pdf(sheet_id)
+                path_pdf = DATA_DIR / f'sheet_{sheet_id}.pdf'
+                with open(path_pdf, 'wb') as f:
+                    for chunk in response_pdf:
+                        f.write(chunk)
+            except Exception as e:
+                log(f'ERROR al descargar PDF para hoja {sheet.name}: {e}')
         log('Descarga y comparación completadas.')
     except Exception as e:
         log(f'ERROR: {e}')
+
+def main():
+    if '--una-sola-ejecucion' in sys.argv:
+        descargar_y_guardar_todo()
+        return
+    print('Iniciando tarea periódica de descarga de Smartsheet...')
+    descargar_y_guardar_todo()  # Primera ejecución inmediata
+    schedule.every(3).minutes.do(descargar_y_guardar_todo)
+    while True:
+        schedule.run_pending()
+        time.sleep(1)
+
+if __name__ == '__main__':
     main()
