@@ -71,6 +71,7 @@ Permitir a cualquier usuario o empresa automatizar la descarga, comparación y e
 - `/archivos` : Listado de archivos descargados (JSON, XLSX, CSV, PDF).
 - `/archivo/<nombre>` : Descarga o visualiza un archivo específico (útil para IA o integraciones).
 - `/admin` : Panel de administración con estadísticas de descargas, cambios y errores.
+- `/api/hojas_json` : **Nuevo** Endpoint que expone todos los datos descargados en formato JSON, listo para ser consumido por IA, sistemas de renders o cualquier integración externa.
 
 ## Despliegue en Render.com
 
@@ -148,7 +149,7 @@ Permitir a cualquier usuario o empresa automatizar la descarga, comparación y e
 2. Descarga periódica y manual de hojas Smartsheet en JSON, XLSX, CSV, PDF.
 3. Exposición de archivos y estado vía web y API.
 4. Panel de administración y logs accesibles desde la web.
-5. Integración sencilla con IA y sistemas externos vía endpoints REST.
+5. Integración sencilla con IA y sistemas externos vía endpoints REST. Ya está implementado el endpoint `/api/hojas_json` que permite a cualquier IA o sistema externo acceder a todos los datos descargados de Smartsheet en formato JSON de manera simple y directa.
 6. Despliegue fácil en local, Docker o cloud.
 
 ---
