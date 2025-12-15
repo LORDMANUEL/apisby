@@ -1,5 +1,23 @@
 
 from flask import Flask, request, render_template_string, send_file, jsonify, Response
+import os
+from pathlib import Path
+import subprocess
+import datetime
+import threading
+
+app = Flask(__name__)
+
+from descarga_periodica import cargar_todos_los_json
+
+# Endpoint para exponer todos los JSON a la IA
+@app.route('/api/hojas_json', methods=['GET'])
+def api_hojas_json():
+    """Devuelve todos los datos de las hojas en formato JSON para consumo IA."""
+    hojas = cargar_todos_los_json()
+    return jsonify(hojas)
+
+from flask import Flask, request, render_template_string, send_file, jsonify, Response
 
 import os
 from pathlib import Path
@@ -115,9 +133,9 @@ def index():
             f.write(token)
         os.environ['SMARTSHEET_API_TOKEN'] = token
         subprocess.Popen(['python3', str(Path(__file__).parent / 'descarga_periodica.py')])
-        return render_template_string(TEMPLATE_OK.format(last_run=get_last_run(), archivos=render_archivos()))
+        return render_template_string(TEMPLATE_OK.replace('{last_run}', get_last_run()).replace('{archivos}', render_archivos()))
     if token_path.exists():
-        return render_template_string(TEMPLATE_OK.format(last_run=get_last_run(), archivos=render_archivos()))
+        return render_template_string(TEMPLATE_OK.replace('{last_run}', get_last_run()).replace('{archivos}', render_archivos()))
     return render_template_string(TEMPLATE_FORM)
 
 # Renderizar tabla de archivos
