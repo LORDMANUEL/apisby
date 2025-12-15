@@ -10,6 +10,7 @@ API clonable para descargar y comparar datos de Smartsheet periódicamente, con 
 - Incluye una pequeña web para ingresar el token y mostrar el estado del servicio.
 - Listo para clonar y usar en cualquier Linux.
 
+
 ## Instalación rápida
 
 1. Clona el repositorio:
@@ -25,9 +26,26 @@ API clonable para descargar y comparar datos de Smartsheet periódicamente, con 
 
 3. (Opcional) Levanta la web para ver el estado o ingresar el token:
 	```bash
+	source api/venv/bin/activate
 	python3 api/app.py
 	# Luego abre http://localhost:8080
 	```
+
+## Despliegue en Render.com
+
+1. Crea una cuenta en https://render.com y selecciona "New Web Service".
+2. Conecta tu repositorio de GitHub.
+3. Configura:
+	- **Environment**: Python 3
+	- **Build Command**: `pip install -r api/requirements.txt`
+	- **Start Command**: `python3 api/app.py`
+	- **Root Directory**: `.`
+	- **Port**: 8080
+4. Agrega la variable de entorno `SMARTSHEET_API_TOKEN` en la sección de Environment.
+5. Render instalará Flask y todas las dependencias automáticamente.
+6. Accede a la URL pública que Render te proporciona.
+
+---
 
 ## Estructura
 
