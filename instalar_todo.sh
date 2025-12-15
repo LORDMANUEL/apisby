@@ -25,17 +25,25 @@ mkdir -p "$(dirname "$0")/api/data"
 
 
 
-# Crear y usar entorno virtual Python (idempotente y robusto)
+
+echo "[INFO] Creando entorno virtual Python en $VENV_DIR..."
 VENV_DIR="$(dirname "$0")/api/venv"
 until [ -d "$VENV_DIR" ]; do
     python3 -m venv "$VENV_DIR" || rm -rf "$VENV_DIR"
     sleep 1
 done
+echo "[INFO] Entorno virtual creado. Instalando dependencias..."
 source "$VENV_DIR/bin/activate"
-until pip install --upgrade pip && pip install -r "$(dirname "$0")/api/requirements.txt"; do
-    echo "[INFO] Reintentando instalación de dependencias Python..."
-    sleep 2
-done
+PIP_CMD="pip install --upgrade pip && pip install -r \"$(dirname \"$0\")/api/requirements.txt\""
+if ! eval $PIP_CMD; then
+    echo "[WARN] Instalación normal falló, reintentando con --break-system-packages (PEP 668)..."
+    until pip install --upgrade pip --break-system-packages && pip install --break-system-packages -r "$(dirname "$0")/api/requirements.txt"; do
+        echo "[INFO] Reintentando instalación de dependencias Python con --break-system-packages..."
+        sleep 2
+    done
+else
+    echo "[INFO] Dependencias Python instaladas correctamente."
+fi
 deactivate
 
 # Solicitar token al usuario
