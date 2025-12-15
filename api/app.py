@@ -1,3 +1,16 @@
+import zipfile
+import io
+# Endpoint para descargar todos los archivos de Smartsheet en un ZIP
+@app.route('/descargar-todo', methods=['GET'])
+def descargar_todo():
+    data_dir = Path(__file__).parent / 'data'
+    mem_zip = io.BytesIO()
+    with zipfile.ZipFile(mem_zip, mode='w', compression=zipfile.ZIP_DEFLATED) as zf:
+        for archivo in data_dir.glob('sheet_*.*'):
+            # El nombre en el ZIP será igual al nombre del archivo local
+            zf.write(archivo, arcname=archivo.name)
+    mem_zip.seek(0)
+    return send_file(mem_zip, mimetype='application/zip', as_attachment=True, download_name='smartsheet_todo.zip')
 
 from flask import Flask, request, render_template_string, send_file, jsonify, Response
 import os
