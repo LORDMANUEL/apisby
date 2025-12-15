@@ -1,0 +1,13 @@
+[Unit]
+Description=Smartsheet API Flask Service
+After=network.target
+
+[Service]
+Type=simple
+WorkingDirectory=/workspaces/apisby
+ExecStart=/usr/bin/python3 api/app.py
+Restart=always
+Environment=PYTHONUNBUFFERED=1
+
+[Install]
+WantedBy=multi-user.target
