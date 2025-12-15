@@ -1,3 +1,12 @@
+# Endpoint para descargar un solo JSON con todas las hojas (para IA)
+@app.route('/descargar-todo-json', methods=['GET'])
+def descargar_todo_json():
+    hojas = cargar_todos_los_json()
+    return send_file(
+        io.BytesIO(json.dumps(hojas, ensure_ascii=False, indent=2).encode('utf-8')),
+        mimetype='application/json',
+        as_attachment=True,
+        download_name='smartsheet_todo.json')
 import zipfile
 import io
 # Endpoint para descargar todos los archivos de Smartsheet en un ZIP
@@ -140,15 +149,22 @@ def get_last_run():
 @app.route('/', methods=['GET', 'POST'])
 def index():
     token_path = Path(__file__).parent / '.smartsheet_token'
+    menu_descargas = '''
+    <div style="margin:1em 0;">
+        <a class="btn" href="/descargar-todo" target="_blank">Descargar TODO (ZIP)</a>
+        <a class="btn" href="/descargar-todo-json" target="_blank">Descargar TODO (JSON global)</a>
+        <a class="btn" href="/api/hojas_json" target="_blank">Ver JSON para IA</a>
+    </div>
+    '''
     if request.method == 'POST' and 'token' in request.form:
         token = request.form['token']
         with open(token_path, 'w') as f:
             f.write(token)
         os.environ['SMARTSHEET_API_TOKEN'] = token
         subprocess.Popen(['python3', str(Path(__file__).parent / 'descarga_periodica.py')])
-        return render_template_string(TEMPLATE_OK.replace('{last_run}', get_last_run()).replace('{archivos}', render_archivos()))
+        return render_template_string(menu_descargas + TEMPLATE_OK.replace('{last_run}', get_last_run()).replace('{archivos}', render_archivos()))
     if token_path.exists():
-        return render_template_string(TEMPLATE_OK.replace('{last_run}', get_last_run()).replace('{archivos}', render_archivos()))
+        return render_template_string(menu_descargas + TEMPLATE_OK.replace('{last_run}', get_last_run()).replace('{archivos}', render_archivos()))
     return render_template_string(TEMPLATE_FORM)
 
 # Renderizar tabla de archivos
