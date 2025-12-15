@@ -49,29 +49,29 @@ def descargar_y_guardar_todo():
                 json.dump(sheet_data, f)
             # Descargar como Excel (XLSX)
             try:
-                response_xlsx = smartsheet_client.Sheets.get_sheet_as_excel(sheet_id)
-                path_xlsx = DATA_DIR / f'sheet_{sheet_id}.xlsx'
-                with open(path_xlsx, 'wb') as f:
-                    for chunk in response_xlsx:
-                        f.write(chunk)
+                file_xlsx = f'sheet_{sheet_id}.xlsx'
+                response = smartsheet_client.Sheets.get_sheet_as_excel(sheet_id, str(DATA_DIR), alternate_file_name=file_xlsx)
+                path_xlsx = DATA_DIR / file_xlsx
+                if not path_xlsx.exists():
+                    log(f'ERROR: No se generó el archivo XLSX para hoja {sheet.name}')
             except Exception as e:
                 log(f'ERROR al descargar XLSX para hoja {sheet.name}: {e}')
             # Descargar como CSV
             try:
-                response_csv = smartsheet_client.Sheets.get_sheet_as_csv(sheet_id)
-                path_csv = DATA_DIR / f'sheet_{sheet_id}.csv'
-                with open(path_csv, 'wb') as f:
-                    for chunk in response_csv:
-                        f.write(chunk)
+                file_csv = f'sheet_{sheet_id}.csv'
+                response = smartsheet_client.Sheets.get_sheet_as_csv(sheet_id, str(DATA_DIR), alternate_file_name=file_csv)
+                path_csv = DATA_DIR / file_csv
+                if not path_csv.exists():
+                    log(f'ERROR: No se generó el archivo CSV para hoja {sheet.name}')
             except Exception as e:
                 log(f'ERROR al descargar CSV para hoja {sheet.name}: {e}')
             # Descargar como PDF
             try:
-                response_pdf = smartsheet_client.Sheets.get_sheet_as_pdf(sheet_id)
-                path_pdf = DATA_DIR / f'sheet_{sheet_id}.pdf'
-                with open(path_pdf, 'wb') as f:
-                    for chunk in response_pdf:
-                        f.write(chunk)
+                file_pdf = f'sheet_{sheet_id}.pdf'
+                response = smartsheet_client.Sheets.get_sheet_as_pdf(sheet_id, str(DATA_DIR), alternate_file_name=file_pdf)
+                path_pdf = DATA_DIR / file_pdf
+                if not path_pdf.exists():
+                    log(f'ERROR: No se generó el archivo PDF para hoja {sheet.name}')
             except Exception as e:
                 log(f'ERROR al descargar PDF para hoja {sheet.name}: {e}')
         log('Descarga y comparación completadas.')

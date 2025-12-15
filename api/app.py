@@ -115,9 +115,9 @@ def index():
             f.write(token)
         os.environ['SMARTSHEET_API_TOKEN'] = token
         subprocess.Popen(['python3', str(Path(__file__).parent / 'descarga_periodica.py')])
-        return render_template_string(TEMPLATE_OK.format(last_run=get_last_run(), archivos=render_archivos()))
+        return render_template_string(TEMPLATE_OK.replace('{last_run}', get_last_run()).replace('{archivos}', render_archivos()))
     if token_path.exists():
-        return render_template_string(TEMPLATE_OK.format(last_run=get_last_run(), archivos=render_archivos()))
+        return render_template_string(TEMPLATE_OK.replace('{last_run}', get_last_run()).replace('{archivos}', render_archivos()))
     return render_template_string(TEMPLATE_FORM)
 
 # Renderizar tabla de archivos
