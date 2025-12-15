@@ -1,0 +1,4 @@
+# requirements.txt para la API web y descarga periódica
+flask
+smartsheet-python-sdk
+schedule
