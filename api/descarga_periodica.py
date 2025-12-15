@@ -1,3 +1,18 @@
+def cargar_todos_los_json():
+    """
+    Lee todos los archivos JSON en el directorio DATA_DIR y retorna una lista de diccionarios.
+    Útil para procesamiento IA, embeddings, búsqueda semántica, etc.
+    """
+    import glob
+    json_files = glob.glob(str(DATA_DIR / 'sheet_*.json'))
+    hojas = []
+    for file in json_files:
+        try:
+            with open(file, 'r') as f:
+                hojas.append(json.load(f))
+        except Exception as e:
+            log(f'ERROR al leer {file}: {e}')
+    return hojas
 
 
 import smartsheet

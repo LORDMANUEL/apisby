@@ -1,3 +1,10 @@
+from descarga_periodica import cargar_todos_los_json
+# Endpoint para exponer todos los JSON a la IA
+@app.route('/api/hojas_json', methods=['GET'])
+def api_hojas_json():
+    """Devuelve todos los datos de las hojas en formato JSON para consumo IA."""
+    hojas = cargar_todos_los_json()
+    return jsonify(hojas)
 
 from flask import Flask, request, render_template_string, send_file, jsonify, Response
 
