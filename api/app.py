@@ -1,4 +1,15 @@
+
+from flask import Flask, request, render_template_string, send_file, jsonify, Response
+import os
+from pathlib import Path
+import subprocess
+import datetime
+import threading
+
+app = Flask(__name__)
+
 from descarga_periodica import cargar_todos_los_json
+
 # Endpoint para exponer todos los JSON a la IA
 @app.route('/api/hojas_json', methods=['GET'])
 def api_hojas_json():
