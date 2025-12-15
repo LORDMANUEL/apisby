@@ -18,7 +18,7 @@ function instalar_dependencia() {
 instalar_dependencia whiptail
 instalar_dependencia python3
 instalar_dependencia pip || instalar_dependencia python3-pip
-instalar_dependencia crontab || instalar_dependencia cron
+instalar_dependencia cron
 
 # Crear estructura de carpetas
 mkdir -p "$(dirname "$0")/api/data"
