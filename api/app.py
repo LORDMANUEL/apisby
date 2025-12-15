@@ -1,11 +1,23 @@
 
-from flask import Flask, request, render_template_string, send_file, jsonify
+from flask import Flask, request, render_template_string, send_file, jsonify, Response
+
 import os
 from pathlib import Path
 import subprocess
 import datetime
+import threading
+
 
 app = Flask(__name__)
+
+# Lanzar descarga periódica en background al iniciar la app
+def start_descarga_background():
+    def run():
+        subprocess.Popen(['python3', str(Path(__file__).parent / 'descarga_periodica.py')])
+    t = threading.Thread(target=run, daemon=True)
+    t.start()
+
+start_descarga_background()
 
 LOG_FILE = Path(__file__).parent / 'descarga.log'
 DATA_DIR = Path(__file__).parent / 'data'
@@ -34,6 +46,7 @@ button, input[type=submit] { padding: 8px 16px; margin-top: 8px; }
 </body></html>
 '''
 
+
 TEMPLATE_OK = '''
 <!DOCTYPE html>
 <html><head>
@@ -56,6 +69,7 @@ th { background: #f0f0f0; }
 <p>
     <a class="btn" href="/logs" target="_blank">Ver logs</a>
     <a class="btn" href="/admin">Panel administración</a>
+    <a class="btn" href="/openapi" target="_blank">Ver OpenAPI/Swagger</a>
 </p>
 <h3>Archivos descargados</h3>
 <form method="post" action="/descargar_manual">
@@ -70,6 +84,13 @@ th { background: #f0f0f0; }
 </div>
 </body></html>
 '''
+# Endpoint para servir el archivo OpenAPI/Swagger
+@app.route('/openapi')
+def openapi():
+    openapi_path = Path(__file__).parent / 'openapi.yaml'
+    if openapi_path.exists():
+        return Response(openapi_path.read_text(), mimetype='text/yaml')
+    return 'No se encontró la documentación OpenAPI', 404
 
 def get_last_run():
     if LOG_FILE.exists():
