@@ -1,3 +1,17 @@
+
+import zipfile
+import io
+import os
+from pathlib import Path
+import subprocess
+import datetime
+import threading
+from flask import Flask, request, render_template_string, send_file, jsonify, Response
+
+app = Flask(__name__)
+
+from descarga_periodica import cargar_todos_los_json
+
 # Endpoint para descargar un solo JSON con todas las hojas (para IA)
 @app.route('/descargar-todo-json', methods=['GET'])
 def descargar_todo_json():
@@ -7,8 +21,7 @@ def descargar_todo_json():
         mimetype='application/json',
         as_attachment=True,
         download_name='smartsheet_todo.json')
-import zipfile
-import io
+
 # Endpoint para descargar todos los archivos de Smartsheet en un ZIP
 @app.route('/descargar-todo', methods=['GET'])
 def descargar_todo():
@@ -20,17 +33,6 @@ def descargar_todo():
             zf.write(archivo, arcname=archivo.name)
     mem_zip.seek(0)
     return send_file(mem_zip, mimetype='application/zip', as_attachment=True, download_name='smartsheet_todo.zip')
-
-from flask import Flask, request, render_template_string, send_file, jsonify, Response
-import os
-from pathlib import Path
-import subprocess
-import datetime
-import threading
-
-app = Flask(__name__)
-
-from descarga_periodica import cargar_todos_los_json
 
 # Endpoint para exponer todos los JSON a la IA
 @app.route('/api/hojas_json', methods=['GET'])
@@ -163,9 +165,11 @@ def index():
         os.environ['SMARTSHEET_API_TOKEN'] = token
         subprocess.Popen(['python3', str(Path(__file__).parent / 'descarga_periodica.py')])
         return render_template_string(menu_descargas + TEMPLATE_OK.replace('{last_run}', get_last_run()).replace('{archivos}', render_archivos()))
+    # Siempre mostrar los botones de descarga, aunque no haya token o archivos
     if token_path.exists():
         return render_template_string(menu_descargas + TEMPLATE_OK.replace('{last_run}', get_last_run()).replace('{archivos}', render_archivos()))
-    return render_template_string(TEMPLATE_FORM)
+    # Si no hay token, mostrar los botones y el formulario
+    return render_template_string(menu_descargas + TEMPLATE_FORM)
 
 # Renderizar tabla de archivos
 def render_archivos():
